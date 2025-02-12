@@ -35,7 +35,7 @@ export const blacklistMiddleware = (
     }
   })();
 };
-export const authMiddleware = async (
+export const authenticationMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -54,8 +54,27 @@ export const authMiddleware = async (
       return res.status(404).json(responseJson.userNotFound);
     }
 
+    // setting user to req
     req.user = userInfo;
-    if (req.url == "/shorten-bulk" && userInfo.tier != "enterprise") {
+
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      error: error ? (error as Error).message : "Auth: Internal Server Error",
+    });
+  }
+};
+
+export const authorisationMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // reading user info from request
+    const { user } = req;
+
+    if (req.url == "/shorten-bulk" && user?.tier != "enterprise") {
       return res.status(403).json(responseJson.accessDenied);
     }
 

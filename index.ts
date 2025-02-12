@@ -1,41 +1,48 @@
 import "reflect-metadata";
 import express, { NextFunction, Request, Response } from "express";
+
+declare module "express-serve-static-core" {
+  interface Request {
+    user?: Users; // Add the user property to the Request interface
+  }
+}
 import URLShortenerManager from "./services/url-shortener.service";
-import UserManager from "./services/users.service";
 import { responseJson } from "./utils/response.util";
+import LogManager from "./services/logs.service";
+
+import responseTime from "response-time";
+import {
+  authMiddleware,
+  blacklistMiddleware,
+  loggingMiddleware,
+} from "./middleware";
+import { Users } from "./models/users.model";
 
 const app = express();
 app.use(express.json());
+
+app.use(responseTime());
+
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.setHeader("Content-Type", "application/json");
-  const apiKey = req.headers["api-key"] as string;
+  blacklistMiddleware(req, res, next);
+});
 
-  (async () => {
-    if (!apiKey) {
-      return res.status(403).json(responseJson.apiKeyRequired);
-    }
-    const userInfo = await UserManager.getUserByApiKey(apiKey);
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  await authMiddleware(req, res, next);
+});
 
-    if (!userInfo) {
-      return res.status(404).json(responseJson.userNotFound);
-    }
-
-    if (req.url == "/shorten-bulk" && userInfo.tier != "enterprise") {
-      return res.status(403).json(responseJson.accessDenied);
-    }
-    next();
-  })();
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  await loggingMiddleware(req, res, next);
 });
 
 app.get("/", (req, res) => {
   res.status(200).json({ status: 200 });
 });
 
-app.get("/list", (req: Request, res: Response, next: NextFunction) => {
+app.get("/logs", (req: Request, res: Response, next: NextFunction) => {
   (async () => {
     try {
-      const apiKey = req.headers["api-key"] as string;
-      const allData = await URLShortenerManager.getAllUrls(apiKey);
+      const allData = await LogManager.getAllLogs();
       return res.json(allData);
     } catch (err) {
       next(err);
@@ -43,10 +50,11 @@ app.get("/list", (req: Request, res: Response, next: NextFunction) => {
   })();
 });
 
-app.get("/users", (req: Request, res: Response, next: NextFunction) => {
+app.get("/list", (req: Request, res: Response, next: NextFunction) => {
   (async () => {
     try {
-      const allData = await UserManager.getAllUsers();
+      const apiKey = req.headers["api-key"] as string;
+      const allData = await URLShortenerManager.getAllUrls(apiKey);
       return res.json(allData);
     } catch (err) {
       next(err);

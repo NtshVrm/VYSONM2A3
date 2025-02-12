@@ -12,7 +12,8 @@ import LogManager from "./services/logs.service";
 
 import responseTime from "response-time";
 import {
-  authMiddleware,
+  authenticationMiddleware,
+  authorisationMiddleware,
   blacklistMiddleware,
   loggingMiddleware,
 } from "./middleware";
@@ -28,7 +29,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use(async (req: Request, res: Response, next: NextFunction) => {
-  await authMiddleware(req, res, next);
+  await authenticationMiddleware(req, res, next);
+});
+
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  await authorisationMiddleware(req, res, next);
 });
 
 app.use(async (req: Request, res: Response, next: NextFunction) => {

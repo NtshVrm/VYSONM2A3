@@ -60,6 +60,14 @@ Sample API Keys :
 
 ## API Endpoints
 
+### Get All logs
+
+```http
+GET /logs
+```
+
+- Returns all stored logs.
+
 ### Get All URLs
 
 ```http

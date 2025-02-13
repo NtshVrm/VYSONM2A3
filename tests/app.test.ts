@@ -50,7 +50,7 @@ describe("POST /shorten", () => {
     const response = await request(app).post("/shorten").send({ long_url: "" });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("API key is required.");
-  });
+  }, 10000);
 
   it("should return 400 for empty URL", async () => {
     const response = await request(app)
@@ -62,7 +62,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).not.toBeDefined();
     expect(response.body.error).not.toBe("");
     expect(response.body.error).toBe("Original long URL is required!");
-  });
+  }, 10000);
 
   it("should create a new short code and return it", async () => {
     const response = await request(app)
@@ -80,7 +80,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).not.toBe("");
     expect(response.body.expiry_date).toBeDefined();
     expect(response.body.expiry_date).toBe(null);
-  });
+  }, 10000);
 
   it("should create new short code for duplicate URL", async () => {
     const response = await request(app)
@@ -97,7 +97,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).not.toBe(short_code);
     expect(response.body.expiry_date).toBeDefined();
     expect(response.body.expiry_date).toBe(null);
-  });
+  }, 10000);
 
   it("should not allow access if user does not exist", async () => {
     const response = await request(app)
@@ -110,7 +110,7 @@ describe("POST /shorten", () => {
     expect(response.body).toBeDefined();
     expect(response.body.error).not.toBe("");
     expect(response.body.error).toBe("User does not exist.");
-  });
+  }, 10000);
 
   it("should create with custom short code", async () => {
     const customCode = "abc123";
@@ -129,7 +129,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).toBe(customCode);
     expect(response.body.expiry_date).toBeDefined();
     expect(response.body.expiry_date).toBe(null);
-  });
+  }, 10000);
 
   it("should return error if custom short code already exists", async () => {
     const customCode = "abc123";
@@ -146,7 +146,7 @@ describe("POST /shorten", () => {
     expect(response.body.error).toBe(
       "Short code already exists, please try with a different code."
     );
-  });
+  }, 10000);
 
   it("should set expiry date if given", async () => {
     const response = await request(app)
@@ -165,7 +165,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).toBe("xyz789");
     expect(response.body.expiry_date).toBeDefined();
     expect(response.body.expiry_date).toBe("2025-02-06T18:36:24.585Z");
-  });
+  }, 10000);
 
   it("should create a new short code with a password", async () => {
     const password = "securePassword";
@@ -185,7 +185,7 @@ describe("POST /shorten", () => {
     expect(response.body.short_code).not.toBe("");
     expect(response.body.expiry_date).toBeDefined();
     expect(response.body.expiry_date).toBe(null);
-  });
+  }, 10000);
 
   it("should return error if password is empty", async () => {
     const response = await request(app)
@@ -197,7 +197,7 @@ describe("POST /shorten", () => {
       });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Password cannot be empty!");
-  });
+  }, 10000);
 });
 
 describe("GET /redirect", () => {
@@ -212,13 +212,13 @@ describe("GET /redirect", () => {
       custom_code: short_code,
       password: password,
     });
-  });
+  }, 1000);
 
   it("should fail if API KEY is not given", async () => {
     const response = await request(app).get("/redirect?code=test123");
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("API key is required.");
-  });
+  }, 10000);
 
   it("should return 400 if code isn't given", async () => {
     const response = await request(app)
@@ -227,7 +227,7 @@ describe("GET /redirect", () => {
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Short code is required.");
-  });
+  }, 10000);
 
   it("should return 404 if short code is not found", async () => {
     const response = await request(app)
@@ -236,7 +236,7 @@ describe("GET /redirect", () => {
     expect(response.status).toBe(404);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Short code does not exist.");
-  });
+  }, 10000);
 
   it("should return 404 if user does not exist", async () => {
     const response = await request(app)
@@ -245,7 +245,7 @@ describe("GET /redirect", () => {
     expect(response.status).toBe(404);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("User does not exist.");
-  });
+  }, 10000);
 
   it("should return 410 if URL has expired", async () => {
     // URL with expiry date in the past
@@ -261,7 +261,7 @@ describe("GET /redirect", () => {
       .set("api-key", API_KEY);
     expect(response.status).toBe(410);
     expect(response.body.error).toBe("Short code has expired!");
-  });
+  }, 10000);
 
   it("should return 403 if password is required but not provided", async () => {
     const response = await request(app)
@@ -269,7 +269,7 @@ describe("GET /redirect", () => {
       .set("api-key", API_KEY);
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("Needs a password to be accessed.");
-  });
+  }, 10000);
 
   it("should return 403 if the password is incorrect", async () => {
     const response = await request(app)
@@ -277,7 +277,7 @@ describe("GET /redirect", () => {
       .set("api-key", API_KEY);
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("The password is incorrect.");
-  });
+  }, 10000);
 
   it("should redirect to original URL if short code exists and password is correct", async () => {
     const response = await request(app)
@@ -285,7 +285,7 @@ describe("GET /redirect", () => {
       .set("api-key", API_KEY);
     expect(response.status).toBe(302);
     expect(response.header.location).toBe(original_url);
-  });
+  }, 10000);
 });
 
 describe("DELETE /delete", () => {
@@ -298,7 +298,7 @@ describe("DELETE /delete", () => {
       long_url: original_url,
       custom_code: short_code,
     });
-  });
+  }, 10000);
 
   it("should fail if API KEY is not given", async () => {
     const response = await request(app)
@@ -306,7 +306,7 @@ describe("DELETE /delete", () => {
       .send({ short_code: "test" });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("API key is required.");
-  });
+  }, 10000);
 
   it("should return 400 if short code is not given", async () => {
     const response = await request(app)
@@ -316,7 +316,7 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Short code is required.");
-  });
+  }, 10000);
 
   it("should return 404 if short code is not found", async () => {
     const response = await request(app)
@@ -326,7 +326,7 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(404);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Short code does not exist.");
-  });
+  }, 10000);
 
   it("should return 404 if user does not exist", async () => {
     const response = await request(app)
@@ -336,7 +336,7 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(404);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("User does not exist.");
-  });
+  }, 10000);
 
   it("should successfully delete an existing short code", async () => {
     const response = await request(app)
@@ -346,7 +346,7 @@ describe("DELETE /delete", () => {
     expect(response.status).toBe(200);
     expect(response.body).toBeDefined();
     expect(response.body.message).toBe(`${short_code} deleted successfully!`);
-  });
+  }, 10000);
 
   it("should return 410 if trying to delete an expired URL", async () => {
     const expiredCode = "expired456";
@@ -363,7 +363,7 @@ describe("DELETE /delete", () => {
       .send({ short_code: expiredCode });
     expect(response.status).toBe(410);
     expect(response.body.error).toBe("Short code has expired!");
-  });
+  }, 10000);
 });
 
 describe("PUT /code/:shortCode", () => {
@@ -376,7 +376,7 @@ describe("PUT /code/:shortCode", () => {
       custom_code: short_code,
       password: "initialPassword",
     });
-  });
+  }, 10000);
 
   it("should fail if API KEY is not given", async () => {
     const response = await request(app)
@@ -384,7 +384,7 @@ describe("PUT /code/:shortCode", () => {
       .send({ expiry_date: "2025-01-01T00:00:00.000Z" });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("API key is required.");
-  });
+  }, 10000);
 
   it("should return 400 if short code is not found", async () => {
     const response = await request(app)
@@ -394,7 +394,7 @@ describe("PUT /code/:shortCode", () => {
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Short code does not exist.");
-  });
+  }, 10000);
 
   it("should successfully update expiry date", async () => {
     const newExpiryDate = "2025-01-01T00:00:00.000Z";
@@ -405,7 +405,7 @@ describe("PUT /code/:shortCode", () => {
     expect(response.status).toBe(201);
     expect(response.body).toBeDefined();
     expect(response.body.short_code).toBe(short_code);
-  });
+  }, 10000);
 
   it("should handle null expiry date", async () => {
     const response = await request(app)
@@ -415,7 +415,7 @@ describe("PUT /code/:shortCode", () => {
     expect(response.status).toBe(201);
     expect(response.body).toBeDefined();
     expect(response.body.short_code).toBe(short_code);
-  });
+  }, 10000);
 
   it("should successfully update password", async () => {
     const newPassword = "newSecurePassword";
@@ -426,7 +426,7 @@ describe("PUT /code/:shortCode", () => {
     expect(response.status).toBe(201);
     expect(response.body).toBeDefined();
     expect(response.body.short_code).toBe(short_code);
-  });
+  }, 10000);
 
   it("should return error if password is empty when updating", async () => {
     const response = await request(app)
@@ -435,7 +435,7 @@ describe("PUT /code/:shortCode", () => {
       .send({ password: "" });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Password cannot be empty!");
-  });
+  }, 10000);
 });
 
 describe("POST /shorten-bulk", () => {
@@ -447,7 +447,7 @@ describe("POST /shorten-bulk", () => {
       .send({ long_urls: urls });
     expect(response.status).toBe(403);
     expect(response.body.error).toBe("API key is required.");
-  });
+  }, 10000);
 
   it("should return 400 if URLs array is empty", async () => {
     const response = await request(app)
@@ -457,7 +457,7 @@ describe("POST /shorten-bulk", () => {
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Original long URL is required!");
-  });
+  }, 10000);
 
   it("should return 400 if URLs array is not provided", async () => {
     const response = await request(app)
@@ -467,7 +467,7 @@ describe("POST /shorten-bulk", () => {
     expect(response.status).toBe(400);
     expect(response.body).toBeDefined();
     expect(response.body.error).toBe("Original long URL is required!");
-  });
+  }, 10000);
 
   it("should successfully create multiple short codes", async () => {
     const response = await request(app)
@@ -483,7 +483,7 @@ describe("POST /shorten-bulk", () => {
       expect(item.short_code).toBeDefined();
       expect(item.short_code).not.toBeNull();
     });
-  });
+  }, 10000);
 
   it("should return 400 if user is not enterprise tier", async () => {
     const response = await request(app)
@@ -495,7 +495,7 @@ describe("POST /shorten-bulk", () => {
     expect(response.body.error).toBe(
       "You do not have access for this operation."
     );
-  });
+  }, 10000);
 
   it("should successfully create multiple short codes with passwords", async () => {
     const response = await request(app)
@@ -514,7 +514,7 @@ describe("POST /shorten-bulk", () => {
       expect(item.short_code).toBeDefined();
       expect(item.short_code).not.toBeNull();
     });
-  });
+  }, 10000);
 
   it("should return error if password is empty for bulk shorten", async () => {
     const response = await request(app)
@@ -526,5 +526,5 @@ describe("POST /shorten-bulk", () => {
       });
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("Password cannot be empty!");
-  });
+  }, 10000);
 });

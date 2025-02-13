@@ -10,6 +10,7 @@ A simple URL shortening service built with Node.js, Express, and TypeORM.
 - Redirect short codes to original URLs
 - View all stored URLs
 - Delete shortened URLs
+- View stored logs
 
 ## Prerequisites
 

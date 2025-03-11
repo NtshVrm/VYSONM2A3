@@ -91,12 +91,15 @@ export const loggingMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
+  const ip = Array.isArray(req.headers['x-forwarded-for']) 
+    ? req.headers['x-forwarded-for'][0] 
+    : req.headers['x-forwarded-for'] || req.ip || req.ips.join(", ") || req.socket.remoteAddress || "";
   const logObj = {
     timestamp: new Date(),
     method: req.method || "",
     url: req.url || "",
     "user-agent": req.headers["user-agent"] || "",
-    ip: req.ip || req.ips.join() || req.socket.remoteAddress || "",
+    ip: ip,
   };
 
   try {
